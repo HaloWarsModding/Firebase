@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.17763.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>ModManifestMaker</AssemblyName>
+    <PlatformTarget>x64</PlatformTarget>
+    <AssemblyVersion>2024.5.15</AssemblyVersion>
+    <RepositoryUrl>https://github.com/HaloWarsModding/Firebase</RepositoryUrl>
+    <Company>HaloWarsModding</Company>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\HWM.Tools.Firebase.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

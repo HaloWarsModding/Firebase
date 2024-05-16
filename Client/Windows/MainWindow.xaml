@@ -1,0 +1,86 @@
+﻿<Window x:Class="HWM.Tools.Firebase.WPF.Windows.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HWM.Tools.Firebase.WPF.Windows"
+        xmlns:m="clr-namespace:HWM.Tools.Firebase.WPF.Models"
+        xmlns:vm="clr-namespace:HWM.Tools.Firebase.WPF.ViewModels"
+        mc:Ignorable="d" WindowStyle="None" ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen" AllowsTransparency="True"
+        Title="Firebase Mod Manager" Width="960" Height="480"
+        OpacityMask="{DynamicResource MainWindow.OpacityMask}"
+        Background="{DynamicResource MainWindow.Background}"
+        LostFocus="Window_LostFocus" GotFocus="Window_GotFocus"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Xaml/Styles/MainViewStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <!-- CONTENT ROOT -->
+    <Grid Background="{DynamicResource Background.Animated}">
+        <!-- Main GUI Layout and Background-->
+        <Image Source="pack://application:,,,/Resources/Layout/MainWindow/Overlay.png" Stretch="Fill"/>
+
+        <!-- Minimize and Exit Buttons-->
+        <StackPanel Margin="0, 32, 15, 0"  Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right">
+            <Button Style="{DynamicResource MainWindow.MinimizeButtonStyle}" Click="MinimizeButton_Click" />
+            <Button Style="{DynamicResource MainWindow.ExitButtonStyle}"     Click="ExitButton_Click"/>
+        </StackPanel>
+
+        <!-- Mod List Box -->
+        <Grid VerticalAlignment="Top" HorizontalAlignment="Left" Width="361" Height="212" Margin="59, 135" Background="{DynamicResource MainWindow.ModContent.ListBox}">
+            <ListBox ItemsSource="{Binding InstalledMods}" SelectedItem="{Binding SelectedMod}" Width="355" Height="192" Margin="3, 12" Background="Transparent" BorderThickness="0" SelectionMode="Single">
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type m:HWDEMod}">
+                        <DockPanel LastChildFill="False">
+                            <TextBlock Foreground="LightGray" Width="173" TextWrapping="NoWrap" Text="{Binding Title}"   DockPanel.Dock="Left"/>
+                            <TextBlock Foreground="LightGray" Width="170" TextWrapping="NoWrap" Text="{Binding Version}" DockPanel.Dock="Right" TextAlignment="Right"/>
+                        </DockPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+
+        <!-- Mod Details -->
+        <Canvas Width="480" Height="90" ClipToBounds="True" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0, 138, 38, 0">
+            <Image Source="{Binding SelectedMod.BannerArt, Converter={StaticResource variableBannerArt}}" Width="480" Stretch="Fill" />
+        </Canvas>
+        <Grid VerticalAlignment="Top" HorizontalAlignment="Right" Width="480" Height="114" Margin="0,233,38,0" Background="{DynamicResource MainWindow.ModContent.DescriptionBox}">
+            <TextBox IsReadOnly="True" TextWrapping="Wrap" FontFamily="Arial" FontSize="12" Width="448" Height="90" BorderThickness="0" Foreground="LightGray" Background="Transparent" Text="{Binding SelectedMod.Description, Mode=OneWay}" />
+        </Grid>
+
+        <!-- Bottom Buttons -->
+        <Grid Margin="112, 395, 112, 0">
+            <StackPanel Height="44" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
+                <Button Style="{DynamicResource BigButtonStyle}" Content="OPTIONS"   Command="{Binding OpenOptionsWindowCommand}"/>
+                <Button Style="{DynamicResource BigButtonStyle}" Content="MY MODS"   Command="{Binding OpenModsFolderCommand}"/>
+                <Button Style="{DynamicResource BigButtonStyle}" Content="MAKE LINK" Command="{Binding CreateModShortcutCommand}"/>
+                <Button Style="{DynamicResource BigButtonStyle}" Content="PLAY"      Command="{Binding PlayGameCommand}" IsEnabled="{Binding EnablePlayButton}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Progress Bar -->
+        <Label BorderThickness="0" ClipToBounds="True"
+           VerticalAlignment="Top" HorizontalAlignment="Center"
+           Width="470" Height="18" Margin="0,440,0,0" FontSize="12" Padding="0"
+           Foreground="{DynamicResource Brushes.ForerunnerCyan}"
+           Content="{Binding ProgressBarLabelContent}"
+           Visibility="{Binding ProgressVisibility}"/>
+        <ProgressBar Style="{DynamicResource RoundedEdgeProgressBarStyle}"
+                 VerticalAlignment="Top" HorizontalAlignment="Left"
+                 Width="470" Height="10" Margin="244, 460, 0, 0"
+                 Maximum="{Binding ProgressBarMaximum}"
+                 Visibility="{Binding ProgressVisibility}"
+                 Value="{Binding ProgressBarValue}"/>
+    </Grid>
+</Window>

@@ -1,0 +1,124 @@
+﻿<Window x:Class="HWM.Tools.Firebase.WPF.Windows.OptionsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:HWM.Tools.Firebase.WPF.ViewModels"
+        xmlns:upd="clr-namespace:ag.WPF.UpDown;assembly=ag.WPF.UpDown"
+        mc:Ignorable="d" WindowStyle="ToolWindow" ResizeMode="NoResize"
+        Title="Options" Height="450" Width="800"
+        WindowStartupLocation="CenterScreen" Closing="SaveConfigOnClose"
+        Background="{DynamicResource OptionsWindow.Background}"
+        LostFocus="Window_LostFocus" GotFocus="Window_GotFocus">
+    <Window.DataContext>
+        <vm:OptionsViewModel/>
+    </Window.DataContext>
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Xaml/Styles/OptionsViewStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <!-- CONTENT ROOT -->
+    <Grid Background="{DynamicResource Background.Animated}">
+        <Canvas Margin="10">
+
+            <!-- Right Side Content -->
+            <TabControl Background="Transparent" TabStripPlacement="Left" ItemContainerStyle="{DynamicResource OptionHeaderStyle}" HorizontalAlignment="Left" Height="392" VerticalAlignment="Center" Width="765">
+
+                <!-- Settings Page -->
+                <TabItem Header="Settings">
+                    <StackPanel Orientation="Vertical" Margin="25,20,15,15">
+                        <DockPanel>
+
+                            <!-- Left side content -->
+                            <StackPanel DockPanel.Dock="Left">
+                                <Label Style="{DynamicResource AboutPageLabelStyle}" Content="Installation Type: "/>
+                                <Label Style="{DynamicResource AboutPageLabelStyle}" Content="Launch Timeout Delay (in seconds): "/>
+                                <Label Style="{DynamicResource AboutPageLabelStyle}" Content="User Mods Directory: "/>
+                            </StackPanel>
+
+                            <!-- Right Side Content -->
+                            <StackPanel DockPanel.Dock="Right" Width="215">
+                                <ComboBox   Style="{DynamicResource UniversalOutlined}" SelectedIndex="{Binding SelectedInstallation, FallbackValue=Steam, Mode=TwoWay}" ItemsSource="{Binding InstallationTypes}"/>
+                                <upd:UpDown Style="{DynamicResource UniversalOutlined}" MinValue="0" Value="{Binding LaunchTimeoutDelay, FallbackValue=30, Mode=TwoWay}" />
+                                <Button     Style="{DynamicResource UniversalOutlined}" Content="Change Mod Folder" Command="{Binding ChangeUserModsFolderCommand}"/>
+                            </StackPanel>
+
+                        </DockPanel>
+
+                        <!-- Bottom Center Content-->
+                        <TextBox Margin="-3,0,0,0" FontSize="14" Width="568" Height="25" IsReadOnly="True" Text="{Binding UserModsFolder, FallbackValue=UserModsFolder, Mode=TwoWay}"/>
+                    </StackPanel>
+                </TabItem>
+
+                <!-- Tools Page -->
+
+                <TabItem Header="Tools" Margin="0,0,0,-25">
+                    <DockPanel Margin="10">
+
+                        <!-- Left side content -->
+                        <StackPanel DockPanel.Dock="Left">
+                            <Label Style="{DynamicResource AboutPageLabelStyle}" Content="Tool used to create manifests for mods (.hwmod file)"/>
+                        </StackPanel>
+
+                        <!-- Right Side Content -->
+                        <StackPanel DockPanel.Dock="Right">
+                            <Button Style="{DynamicResource UniversalOutlined}" Foreground="White" Background="#AAAA" FontSize="14" Content="Mod Manifest Maker" Command="{Binding OpenModManifestMakerCommand}"/>
+                        </StackPanel>
+
+                    </DockPanel>
+                </TabItem>
+
+                <!-- About Page -->
+                <TabItem Header="About" Margin="0,0,0,-50">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top" Orientation="Vertical" Margin="15" Background="Transparent">
+                            <Label Style="{StaticResource AboutPageLabelStyle}">
+                                <Label.Content>
+                                    <TextBlock>
+                                    <Run Text="Developer: Medstar," />
+                                    <Hyperlink Foreground="White" NavigateUri="https://www.moddb.com/members/medstar" RequestNavigate="Hyperlink_RequestNavigate">ModDB Profile,</Hyperlink>
+                                    <Run Text="Discord: medstar"/>
+                                    </TextBlock>
+                                </Label.Content>
+                            </Label>
+                            <Label Style="{StaticResource AboutPageLabelStyle}">
+                                <Label.Content>
+                                    <TextBlock>
+                                    <Run Text="Manager Links:" />
+                                    <Hyperlink Foreground="White" NavigateUri="https://www.moddb.com/mods/halo-wars-de-mod-manager" RequestNavigate="Hyperlink_RequestNavigate">ModDB,</Hyperlink>
+                                    <Hyperlink Foreground="White" NavigateUri="https://github.com/Medstar117/HaloWarsDE-Mod-Manager/blob/main/README.md" RequestNavigate="Hyperlink_RequestNavigate">GitHub</Hyperlink>
+                                    </TextBlock>
+                                </Label.Content>
+                            </Label>
+                            <Label Style="{StaticResource AboutPageLabelStyle}" Content="Testers: Hartzheim, Halo Wars Hub Members"/>
+                            <Label Style="{StaticResource AboutPageLabelStyle}" Content="Overlays and Graphical Aesthetics: CrimsonSoul"/>
+                            <Label Style="{StaticResource AboutPageLabelStyle}">
+                                <Label.Content>
+                                    <TextBlock>
+                                    <Run Text="Icon:" />
+                                    <Hyperlink Foreground="White" NavigateUri="https://www.deviantart.com/blagoicons/art/HALO-Wars-Definitive-Edition-Icon-646323915" RequestNavigate="Hyperlink_RequestNavigate">Blagoicons</Hyperlink>
+                                    </TextBlock>
+                                </Label.Content>
+                            </Label>
+                        </StackPanel>
+                        <TextBox DockPanel.Dock="Bottom" TextWrapping="Wrap"
+                             Background="Transparent" Foreground="White" FontSize="12"
+                             VerticalAlignment="Bottom" HorizontalAlignment="Center"
+                             TextAlignment="Center" Margin="0,40" BorderThickness="0"
+                             Text="Halo Wars: Definitive Edition © Microsoft Corporation. The 'Firebase Mod Manager' was created under Microsoft's 'Game Content Usage Rules' using assets from Halo Wars: Definitive Edition and is neither endorsed by nor affiliated with Microsoft."/>
+                    </DockPanel>
+                </TabItem>
+            </TabControl>
+        </Canvas>
+
+        <!-- Version Text -->
+        <Label Width="Auto" Height="25" Margin="0,0,10,10"
+           HorizontalAlignment="Right" VerticalAlignment="Bottom" HorizontalContentAlignment="Right"
+           Foreground="White" FontSize="14" Content="{Binding VersionText, FallbackValue=Version: 1.2.3.4, Mode=OneWay}"/>
+    </Grid>
+</Window>

@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# Non-Visual Studio specific files and folders
+_[Ll]atest/
+_[Dd]isplayArt/
+
 # User-specific files
 *.rsuser
 *.suo
