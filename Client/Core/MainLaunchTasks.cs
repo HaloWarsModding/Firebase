@@ -26,11 +26,11 @@ namespace HWM.Tools.Firebase.WPF.Core
                     GlobalData.ModManifestFilePath.Delete();
 
                 // Delete any leftover ModData junctions
-                if (JunctionPoint.Exists(GlobalData.ModDataFolderPath.FullName))
-                    JunctionPoint.Delete(GlobalData.ModDataFolderPath.FullName);
+                if (JunctionPoint.Exists(GlobalData.ModDataJunction.FullName))
+                    JunctionPoint.Delete(GlobalData.ModDataJunction.FullName);
 
                 // Double check on directory cleanup
-                if (JunctionPoint.Exists(GlobalData.ModDataFolderPath.FullName) && GlobalData.ModManifestFilePath.Exists)
+                if (JunctionPoint.Exists(GlobalData.ModDataJunction.FullName) && GlobalData.ModManifestFilePath.Exists)
                     throw new IOException("An unknown error has prevented the deletion of either the ModData junction point, the ModManifest.txt file, or both.");
 
                 // All OK
@@ -68,14 +68,14 @@ namespace HWM.Tools.Firebase.WPF.Core
                 }
 
                 // Mainly for Microsoft Store distros so that data can be accessed
-                AddDirectorySecurity(GlobalData.ModDataFolderPath.FullName, SID.AllApplicationPackages, FileSystemRights.Read, AccessControlType.Allow);
+                AddDirectorySecurity(GlobalData.SelectedMod.ModDataFolder!, SID.AllApplicationPackages, FileSystemRights.Read, AccessControlType.Allow);
 
                 // Create folder junctiona and create ModManifest.txt file
-                JunctionPoint.Create(GlobalData.ModDataFolderPath.FullName, GlobalData.SelectedMod.ModDataFolder!, true);
+                JunctionPoint.Create(GlobalData.ModDataJunction.FullName, GlobalData.SelectedMod.ModDataFolder!, true);
 
                 // Create ModManifest.txt pointing to the ModData directory junction
                 using (var manifest = File.CreateText(GlobalData.ModManifestFilePath.FullName))
-                    manifest.WriteLine(GlobalData.ModDataFolderPath.FullName);
+                    manifest.WriteLine(GlobalData.ModDataJunction.FullName);
             }
             catch (Exception ex)
             {

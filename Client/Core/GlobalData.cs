@@ -2,6 +2,7 @@
 using HWM.Tools.Firebase.WPF.Models;
 using System.Diagnostics;
 using System.IO;
+using System.Security.Principal;
 
 namespace HWM.Tools.Firebase.WPF.Core
 {
@@ -24,17 +25,17 @@ namespace HWM.Tools.Firebase.WPF.Core
         #region Launch Commands
 
         private const string Launch_HWDE_Steam = "/C start steam://rungameid/459220";
-        private const string Launch_HWDE_MS = "/C start shell:AppsFolder\\Microsoft.BulldogThreshold_8wekyb3d8bbwe!xgameFinal";
+        private const string Launch_HWDE_MS    = "/C start shell:AppsFolder\\Microsoft.BulldogThreshold_8wekyb3d8bbwe!xgameFinal";
         public static string LaunchCommand => UserConfig.InstallationType == "Steam" ? Launch_HWDE_Steam : Launch_HWDE_MS;
 
         #endregion
 
         #region LocalAppData Info
 
-        private static readonly string LocalAppData_System = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        private static readonly string LocalAppData_Steam = Path.Combine(LocalAppData_System, "Halo Wars");
-        private static readonly string LocalAppData_MS = Path.Combine(LocalAppData_System, "Packages", "Microsoft.BulldogThreshold_8wekyb3d8bbwe", "LocalState");
-        public static DirectoryInfo LocalAppDataFolder => new(UserConfig.InstallationType == "Steam" ? LocalAppData_Steam : LocalAppData_MS);
+        private static readonly DirectoryInfo LocalAppData_System = new($"C:\\Users\\{CurrentUser}\\AppData\\Local");
+        private static readonly DirectoryInfo LocalAppData_Steam  = new(Path.Combine(LocalAppData_System.FullName, "Halo Wars"));
+        private static readonly DirectoryInfo LocalAppData_MS     = new(Path.Combine(LocalAppData_System.FullName, "Packages", "Microsoft.BulldogThreshold_8wekyb3d8bbwe", "LocalState"));
+        public static DirectoryInfo LocalAppDataFolder => UserConfig.InstallationType == "Steam" ? LocalAppData_Steam : LocalAppData_MS;
 
         #endregion
 
@@ -49,12 +50,17 @@ namespace HWM.Tools.Firebase.WPF.Core
 
         #region Other Directories
 
-        public static FileInfo ModManifestFilePath => new(Path.Combine(LocalAppDataFolder.FullName, "ModManifest.txt"));
+        public static FileInfo ModManifestFilePath        => new(Path.Combine(LocalAppDataFolder.FullName, "ModManifest.txt"));
         public static DirectoryInfo DefaultUserModsFolder => new(Path.Combine(AppDirectory.FullName, "HWDE Mods"));
-        public static DirectoryInfo ModDataFolderPath => new(Path.Combine(LocalAppDataFolder.FullName, "ModData"));
+        public static DirectoryInfo ModDataJunction       => new(Path.Combine(LocalAppDataFolder.FullName, "ModData"));
 
         #endregion
 
-        
+        #region Other Data
+
+        public static string CurrentUser => WindowsIdentity.GetCurrent().Name.Split('\\')[1];
+
+        #endregion
+
     }
 }
