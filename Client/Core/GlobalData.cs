@@ -32,7 +32,7 @@ namespace HWM.Tools.Firebase.WPF.Core
 
         #region LocalAppData Info
 
-        private static readonly DirectoryInfo LocalAppData_System = new($"C:\\Users\\{CurrentUser}\\AppData\\Local");
+        private static readonly DirectoryInfo LocalAppData_System = new(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
         private static readonly DirectoryInfo LocalAppData_Steam  = new(Path.Combine(LocalAppData_System.FullName, "Halo Wars"));
         private static readonly DirectoryInfo LocalAppData_MS     = new(Path.Combine(LocalAppData_System.FullName, "Packages", "Microsoft.BulldogThreshold_8wekyb3d8bbwe", "LocalState"));
         public static DirectoryInfo LocalAppDataFolder => UserConfig.InstallationType == "Steam" ? LocalAppData_Steam : LocalAppData_MS;
