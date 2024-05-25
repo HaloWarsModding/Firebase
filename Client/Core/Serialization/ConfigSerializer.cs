@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using System.Security.Principal;
 using System.Xml;
 using System.Xml.Serialization;
 using System.IO;
@@ -39,9 +38,8 @@ namespace HWM.Tools.Firebase.WPF.Core.Serialization
 
                 if (!GlobalData.LocalAppDataFolder.Exists)
                 {
-                    var mb = MessageBox.Show("LocalAppData Folder Missing",
-                                            $"Game LocalAppData directory not found for the currently logged-in user '{WindowsIdentity.GetCurrent().Name.Split('\\')[1]}'\n\n" +
-                                            $"Please ensure that you are logged into the profile that installed the game!");
+                    var mb = MessageBox.Show($"Game LocalAppData directory not found for the currently logged-in user '{GlobalData.CurrentUser}'\n\n" +
+                                             $"Please ensure that you are logged into the profile that installed the game!", "LocalAppData Folder Missing");
 
 
                     // Delete original config and shut down

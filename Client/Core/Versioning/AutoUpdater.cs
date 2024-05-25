@@ -28,9 +28,12 @@ namespace HWM.Tools.Firebase.WPF.Core.Versioning
 
             Utilities.EnsureSingleInstance();
 
-            foreach (var file in Directory.EnumerateFiles(Path.GetDirectoryName(Environment.ProcessPath!)!, "*.deleteonnextlaunch", SearchOption.TopDirectoryOnly))
-                File.Delete(file);
-            Log.Information("Old version files detected and deleted");
+            var filesToDelete = Directory.EnumerateFiles(GlobalData.AppDirectory.FullName, "*.deleteonnextlaunch", SearchOption.TopDirectoryOnly);
+            if (filesToDelete.Any())
+            {
+                foreach (var file in filesToDelete) File.Delete(file);
+                Log.Information("Old version files detected and deleted");
+            }
 
             var releaseData = GetLatestReleaseJSON();
             
@@ -42,7 +45,7 @@ namespace HWM.Tools.Firebase.WPF.Core.Versioning
 
             Log.Information($"A newer version of this mod manager is available ({GlobalData.AppVersion} --> {releaseData.tag_name}). Prompting user for input...");
             var result = MessageBox.Show($"A newer version of this mod manager is available. Would you like to update?\n\n" +
-                                        $"{GlobalData.AppVersion} --> {releaseData.tag_name}", "Update Available", MessageBoxButton.YesNo, MessageBoxImage.Information);
+                                         $"{GlobalData.AppVersion} --> {releaseData.tag_name}", "Update Available", MessageBoxButton.YesNo, MessageBoxImage.Information);
 
             // Update was denied
             if (result != MessageBoxResult.Yes)
@@ -65,7 +68,8 @@ namespace HWM.Tools.Firebase.WPF.Core.Versioning
             var newFiles = Directory.EnumerateFiles(UpdateFolderPath);
             foreach (var file in newFiles) File.Move(file, Path.Combine(GlobalData.AppDirectory.FullName, Path.GetFileName(file)));
 
-            Directory.Delete(UpdateFolderPath);
+            // Clear out update directory
+            Directory.Delete(UpdateFolderPath, true);
 
             // Start new process
             Utilities.PopToastNotification("Now Updating", "Please wait while Firebase updates. The client will restart automatically.");
