@@ -12,6 +12,7 @@
     <ApplicationIcon>Resources\Icon_Blagoicons.ico</ApplicationIcon>
     <PlatformTarget>x64</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <Company>HaloWarsModding</Company>
     <Authors>$(AssemblyName)</Authors>
     <AssemblyVersion>2024.5.15</AssemblyVersion>
