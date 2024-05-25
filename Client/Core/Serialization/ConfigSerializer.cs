@@ -15,27 +15,26 @@ namespace HWM.Tools.Firebase.WPF.Core.Serialization
         private static readonly XmlSerializer serializer = new(typeof(ConfigFile));
         private static readonly XmlWriterSettings xws = new() { OmitXmlDeclaration = true, Indent = true };
 
-        public static ConfigFile? Load()
+        public static bool Load()
         {
             try
             {
                 Log.Information("Loading user configuration...");
 
-                ConfigFile config;
-
                 // A config file already exists
                 if (!File.Exists(UserConfigFilePath))
                 {
                     Log.Information("No configuration file found! Running first-time setup...");
-                    config = RunFirstTimeSetup();
+                    GlobalData.UserConfig = RunFirstTimeSetup();
+                    GlobalData.UserConfig.Save();
                 }
                 else
                 {
                     Log.Information("Existing user configuration file found! Loading entries...");
-                    config = DeserializeUserConfigFile();
+                    GlobalData.UserConfig = DeserializeUserConfigFile();
                 }
-                config.Save();
 
+                Log.Information($"Local AppData folder set to the following: {GlobalData.LocalAppDataFolder}");
                 if (!GlobalData.LocalAppDataFolder.Exists)
                 {
                     var mb = MessageBox.Show($"Game LocalAppData directory not found for the currently logged-in user '{GlobalData.CurrentUser}'\n\n" +
@@ -45,16 +44,16 @@ namespace HWM.Tools.Firebase.WPF.Core.Serialization
                     // Delete original config and shut down
                     if (File.Exists(UserConfigFilePath)) File.Delete(UserConfigFilePath);
                     Log.Error("Game LocalAppData directory was not found. Clearing user config and shutting down...");
-                    return null;
+                    return false;
                 }
 
                 Log.Information("User configuration loaded!");
-                return config;
+                return true;
             }
             catch (Exception ex)
             {
                 Log.Fatal($"A fatal error has occurred while loading user configuration!\n\nMessage: {ex.Message}\n\nStackTrace: {ex.StackTrace}\n\nTargetSite: {ex.TargetSite}");
-                return null;
+                return false;
             }
         }
 

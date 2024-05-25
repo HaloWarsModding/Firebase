@@ -50,9 +50,11 @@ namespace HWM.Tools.Firebase.WPF.ViewModels
             (EnablePlayButton, ProgressBarValue, ProgressBarMaximum, ProgressBarLabelContent) = (true, 0, 6, string.Empty);
 
             // Config loading
-            var config = Load();
-            if (config == null) Application.Current.Shutdown();
-            else                GlobalData.UserConfig = config;
+            if (!Load())
+            {
+                Application.Current.Shutdown();
+                return;
+            }
 
             // Mod loading and setting
             LoadModsFromUserModsFolder();
