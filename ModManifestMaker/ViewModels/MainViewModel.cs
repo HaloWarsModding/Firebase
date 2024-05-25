@@ -14,18 +14,22 @@ namespace HWM.Tools.Firebase.ModManifestMaker.ViewModels
         #region Required Fields
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(RequiredFieldsSet))]
+        [NotifyPropertyChangedFor(nameof(EnableSaving), nameof(ManifestFile))]
         private string _name;
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(RequiredFieldsSet))]
+        [NotifyPropertyChangedFor(nameof(EnableSaving), nameof(ManifestFile))]
         private string _author;
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(RequiredFieldsSet))]
+        [NotifyPropertyChangedFor(nameof(EnableSaving), nameof(ManifestFile))]
         private string _version;
 
-        public string ModDataDirectory => Path.Combine(RootDirectory, "ModData");
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(EnableSaving), nameof(ModDataDirectory))]
+        private string _rootDirectory;
+
+        public string ModDataDirectory => RootDirectory != "" ? Path.Combine(RootDirectory, "ModData") : "";
 
         #endregion
 
@@ -40,29 +44,27 @@ namespace HWM.Tools.Firebase.ModManifestMaker.ViewModels
         [ObservableProperty]
         private string _description;
 
-        public bool RequiredFieldsSet => Name             != ""
-                                      && Author           != ""
-                                      && Version          != ""
-                                      && ModDataDirectory != "";
-
         #endregion
 
-        //public string RootDirectory => new DirectoryInfo(string.IsNullOrEmpty(ModDataDirectory) ? Directory.GetCurrentDirectory() : ModManifestFilePath).Parent?.FullName;
-
-        private string RootDirectory { get; set; }  = string.Empty;
-        private string ModManifestFilename { get; set; } = string.Empty;
+        private bool ModDataDirectoryValid => ModDataDirectory != "" && Directory.Exists(ModDataDirectory);
+        public  bool EnableSaving => Name != "" && Author != "" && Version != "" && ModDataDirectoryValid;
+        private FileInfo ManifestFile => new(Path.Combine(RootDirectory, ReplaceInvalidChars($"{Name} v{Version}.hwmod")));
 
         #endregion
 
         public MainViewModel()
         {
             // Required defaults
-            (Name, Author, Version) = ("Vanilla", "Ensemble Studios", "1.12185.2.0");
+            (Name, Author, Version, RootDirectory) = ("Vanilla", "Ensemble Studios", "1.12185.2.0", "");
 
             // Optional defaults
             (CustomBannerPath, CustomIconPath, Description) = ("", "", "The classic Halo Wars: Definitive Edition experience.\n\nFinish the fight!");
         }
 
+        /// <summary>
+        /// Prompts the user to select a folder containing their mod's data.
+        /// Selected folder must be named "ModData" or must have a "ModData" folder inside it.
+        /// </summary>
         [RelayCommand]
         private void GetModDataFolder()
         {
@@ -76,22 +78,28 @@ namespace HWM.Tools.Firebase.ModManifestMaker.ViewModels
 
             if (modDataFolderSelector.ShowDialog() == true)
             {
+                // Create a DirectoryInfo on the selected path
                 var selectedFolder = new DirectoryInfo(modDataFolderSelector.SelectedPath);
-                if (selectedFolder.Name != "ModData")
-                {
-                    MessageBox.Show("The selected folder must be named \"ModData\".", "Incorrect Folder Name", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
 
-                // Set the new root and generate a custom filename
-                RootDirectory = Directory.GetParent(selectedFolder.FullName)!.FullName;
-                ModManifestFilename = $"{Name} v{Version}.hwmod";
+                // If the actual "ModData" folder was selected instead of the containing folder, this trims off the "ModData" part
+                RootDirectory = (selectedFolder.Name != "ModData") ? selectedFolder.FullName : (selectedFolder.Parent?.FullName ?? string.Empty);
+                
+                // Ensure that either the selected folder is named "ModData" or there is a folder inside the selected one named "ModData"
+                if (!ModDataDirectoryValid)
+                {
+                    MessageBox.Show("The selected folder must be named \"ModData\", or there must be a \"ModData\" folder in the selected directory.", "Incorrect Folder Name", MessageBoxButton.OK, MessageBoxImage.Error);
+                    RootDirectory = "";
+                }
 
                 // Clear custom folder paths since the data will no longer be in a relative root
                 (CustomBannerPath, CustomIconPath) = (string.Empty, string.Empty);
             }
         }
 
+        /// <summary>
+        /// Prompts the user to select a provided resource, whether that resource be a custom artwork or an existing mod manifest
+        /// </summary>
+        /// <param name="component"></param>
         [RelayCommand]
         private void GetCustomResourcePath(string component)
         {
@@ -102,24 +110,24 @@ namespace HWM.Tools.Firebase.ModManifestMaker.ViewModels
                 case "Banner":
                     CustomBannerPath = FileBrowserPrompt(customResourceMessage, "PNG Files (*.png)|*.png|Bitmap Files (*.bmp)|*.bmp");
                     break;
+
                 case "Icon":
-                    CustomIconPath   = FileBrowserPrompt(customResourceMessage, "Icon Files (*.ico)|*.ico");
+                    CustomIconPath = FileBrowserPrompt(customResourceMessage, "Icon Files (*.ico)|*.ico");
                     break;
+
                 case "Manifest":
+                    // Retrieve existing manifest's fully-qualified path
                     var modManifestFilePath = FileBrowserPrompt("Select an existing Halo Wars mod manifest to edit", "Halo Wars Mods (*.hwmod)|*.hwmod", false);
                     if (modManifestFilePath == string.Empty) return;
 
-                    // Since this is an existing manifest, store the original name
-                    RootDirectory       = Path.GetDirectoryName(modManifestFilePath)!;
-                    ModManifestFilename = Path.GetFileName(modManifestFilePath);
-
-                    // Map data from manifest to UI
+                    // Set root directory
+                    RootDirectory = Path.GetDirectoryName(modManifestFilePath)!;
+                    
+                    // Extract manifest data and populate fields
                     var modManifestData = ManifestSerializer.DeserializeManifest(modManifestFilePath) ?? new ModManifest();
                     switch (modManifestData.ManifestVersion)
                     {
                         case "1":
-                            Directory.CreateDirectory(ModDataDirectory);
-
                             // Required data
                             Name    = modManifestData.Required.Title!;
                             Author  = modManifestData.Required.Author!;
@@ -135,14 +143,17 @@ namespace HWM.Tools.Firebase.ModManifestMaker.ViewModels
             }
         }
 
+        /// <summary>
+        /// Saves the new manifest to a .hwmod file.
+        /// </summary>
         [RelayCommand]
         private void SaveManifest()
         {
-            // Delete existing mod manifest
-            if (File.Exists(Path.Combine(RootDirectory, ModManifestFilename)))
-                File.Delete(Path.Combine(RootDirectory, ModManifestFilename));
+            // Delete existing file
+            if (ManifestFile.Exists)
+                ManifestFile.Delete();
 
-            // Make temporary manifest file
+            // Create manifest to serialize
             var tempModManifestData = new ModManifest();
             tempModManifestData.Required.Title               = Name;
             tempModManifestData.Required.Author              = Author;
@@ -152,10 +163,13 @@ namespace HWM.Tools.Firebase.ModManifestMaker.ViewModels
             tempModManifestData.Optional.Desc.Text           = Description;
 
             // Serialize data
-            ManifestSerializer.SerializeManifest(tempModManifestData, Path.Combine(RootDirectory, string.IsNullOrEmpty(ModManifestFilename) ? $"{Name} v{Version.Replace(".", "_")}.hwmod" : ModManifestFilename));
+            ManifestSerializer.SerializeManifest(tempModManifestData, ManifestFile.FullName);
 
-            // Notify user
-            MessageBox.Show($"Saved manifest at {Path.Combine(RootDirectory, ModManifestFilename)}.", "Mod Manifest Saved", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Check if file actually saved
+            if (ManifestFile.Exists)
+                MessageBox.Show($"Saved manifest at {ManifestFile.FullName}.", "Save Successful", MessageBoxButton.OK, MessageBoxImage.Information);
+            else
+                MessageBox.Show($"Could not save mod manifest!.", "Save Unsuccessful", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         #region Helpers
@@ -181,9 +195,15 @@ namespace HWM.Tools.Firebase.ModManifestMaker.ViewModels
                 return string.Empty;
             }
 
-            // Validation pass, return item
-            return trimRoot ? fileDialog.FileName.Replace(RootDirectory + Environment.NewLine, string.Empty) : fileDialog.FileName;
+            // Format path
+            var formattedPath = trimRoot ? fileDialog.FileName.Replace(RootDirectory + "\\", string.Empty) : fileDialog.FileName;
+            if (formattedPath.StartsWith('\\') || formattedPath.StartsWith('/')) formattedPath = formattedPath[1..];
+
+            return formattedPath;
         }
+
+        private static string ReplaceInvalidChars(string filePath)
+            => new(filePath.Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c).ToArray());
 
         #endregion
     }
