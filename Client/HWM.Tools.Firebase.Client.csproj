@@ -15,7 +15,7 @@
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <Company>HaloWarsModding</Company>
     <Authors>$(AssemblyName)</Authors>
-    <AssemblyVersion>2024.5.15</AssemblyVersion>
+    <AssemblyVersion>2024.5.15.1</AssemblyVersion>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>Firebase</AssemblyName>
     <StartupObject></StartupObject>
